@@ -12,15 +12,23 @@ import chessengine.pieces.*;
 
 public class Board extends JPanel{
 
+    Input input = new Input(this);
+
     public int tileSize = 85;
 
     int ranks = 8; // rows
     int files = 8; // columns
 
+    Piece selectedPiece;
+
     ArrayList<Piece> pieceList = new ArrayList<>();
 
     public Board() {
         this.setPreferredSize(new Dimension(files*tileSize, ranks*tileSize));
+
+        this.addMouseListener(input);
+        this.addMouseMotionListener(input);
+
         this.addPieces();
     }
 
@@ -61,6 +69,32 @@ public class Board extends JPanel{
             }
         }
         return null;
+    }
+
+    public boolean isValidMove(Move move) {
+        return !sameTeam(move.piece, move.capture);
+    }
+
+    private boolean sameTeam(Piece p1, Piece p2) {
+        if (p1 == null || p2 == null) {
+            return false;
+        }
+        return p1.isWhite == p2.isWhite;
+    }
+
+    public void makeMove(Move move) {
+        if(this.isValidMove(move)){
+            move.piece.file = move.toFile;
+            move.piece.rank = move.toRank;
+            move.piece.xPos = move.toFile*tileSize;
+            move.piece.yPos = move.toRank*tileSize;
+            
+            this.capture(move);
+        }
+    }
+
+    public void capture(Move move) {
+        pieceList.remove(move.capture);
     }
 
     public void paintComponent(Graphics g) {
