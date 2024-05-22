@@ -36,6 +36,14 @@ public class Piece {
         this.board = board;
     }
 
+    public boolean isValidMovement(int file, int rank) {
+        return true;
+    }
+
+    public boolean moveCollidesWithPiece(int file, int rank) {
+        return false;
+    }
+
     public void paint(Graphics2D g2d) {
         g2d.drawImage(sprite, xPos, yPos, null);
     }

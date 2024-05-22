@@ -14,16 +14,6 @@ public class Input extends MouseAdapter {
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        if(board.selectedPiece != null) {
-            board.selectedPiece.xPos = e.getX() - board.tileSize/2;
-            board.selectedPiece.yPos = e.getY() - board.tileSize/2;
-
-            board.repaint();
-        }
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         int file = e.getX() / board.tileSize;
         int rank = e.getY() / board.tileSize;
@@ -35,16 +25,28 @@ public class Input extends MouseAdapter {
     }
 
     @Override
+    public void mouseDragged(MouseEvent e) {
+        if(board.selectedPiece != null) {
+            board.selectedPiece.xPos = e.getX() - board.tileSize/2;
+            board.selectedPiece.yPos = e.getY() - board.tileSize/2;
+
+            board.repaint();
+        }
+    }
+
+    @Override
     public void mouseReleased(MouseEvent e) {
         int file = e.getX() / board.tileSize;
         int rank = e.getY() / board.tileSize;
 
         if(board.selectedPiece != null) {
             Move move = new Move(board, board.selectedPiece, file, rank);
-            board.makeMove(move);
-        } else {
+            if(board.isValidMove(move)) {
+                board.makeMove(move);
+            } else {
             board.selectedPiece.xPos = board.selectedPiece.file*board.tileSize;
             board.selectedPiece.yPos = board.selectedPiece.rank*board.tileSize;
+            }
         }
 
         board.selectedPiece = null;

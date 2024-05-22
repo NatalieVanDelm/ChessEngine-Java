@@ -17,4 +17,12 @@ public class Pawn extends Piece {
 
         this.sprite = sheet.getSubimage(5*sheetScale, isWhite? 0: sheetScale, sheetScale, sheetScale).getScaledInstance(board.tileSize, board.tileSize, BufferedImage.SCALE_SMOOTH);
     }
+
+    public boolean isValidMovement(int file, int rank) {
+        return true;
+    }
+
+    public boolean moveCollidesWithPiece(int file, int rank) {
+        return false;
+    }
 }

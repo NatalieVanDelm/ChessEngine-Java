@@ -72,7 +72,16 @@ public class Board extends JPanel{
     }
 
     public boolean isValidMove(Move move) {
-        return !sameTeam(move.piece, move.capture);
+        if(sameTeam(move.piece, move.capture)) {
+            return false;
+        }
+        if (!move.piece.isValidMovement(move.toFile, move.toRank)) {
+            return false;
+        }
+        if(move.piece.moveCollidesWithPiece(move.toFile, move.toRank)) {
+            return false;
+        }
+        return true;
     }
 
     private boolean sameTeam(Piece p1, Piece p2) {
@@ -104,6 +113,17 @@ public class Board extends JPanel{
             for (int f = 0; f < files; f++) {
                 g2d.setColor((f+r)%2 == 0 ? new Color(227,190,181) : new Color(157,105,53));
                 g2d.fillRect(f*tileSize, r*tileSize, tileSize, tileSize);
+            }
+        }
+
+        if(selectedPiece != null) {
+            for (int r = 0; r < ranks; r++) {
+                for (int f = 0; f < files; f++) {
+                    if(isValidMove(new Move(this, selectedPiece, f, r))) {
+                        g2d.setColor(new Color(68,100,57,240));
+                        g2d.fillRect(f*tileSize, r*tileSize, tileSize, tileSize);
+                    }
+                }
             }
         }
 
