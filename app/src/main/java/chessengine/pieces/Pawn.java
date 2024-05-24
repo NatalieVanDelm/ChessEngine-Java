@@ -19,7 +19,35 @@ public class Pawn extends Piece {
     }
 
     public boolean isValidMovement(int file, int rank) {
-        return true;
+        
+        int colorIndex = isWhite ? 1 : -1;
+
+        // 1 step
+        if (this.file == file && rank == this.rank - colorIndex && board.getPiece(file, rank) == null) {
+            return true;
+        }
+        // 2 steps
+        if (isFirstMove && this.file == file && rank == this.rank - 2*colorIndex && board.getPiece(file, rank) == null && board.getPiece(file, rank + colorIndex) == null) {
+            return true;
+        }
+        // capture left
+        if (this.file - 1 == file && rank == this.rank - colorIndex && board.getPiece(file, rank) != null) {
+            return true;
+        }
+        // capture right
+        if (this.file + 1 == file && rank == this.rank - colorIndex && board.getPiece(file, rank) != null) {
+            return true;
+        }
+        // enpassant left
+        if (board.getTileIndex(file, rank) == board.enPassantTile && file == this.file - 1 && rank == this.rank - colorIndex && board.getPiece(file, rank+colorIndex) != null) {
+            return true;
+        }
+        // enpassant right
+        if (board.getTileIndex(file, rank) == board.enPassantTile && file == this.file + 1 && rank == this.rank - colorIndex && board.getPiece(file, rank+colorIndex) != null) {
+            return true;
+        }
+
+        return false;
     }
 
     public boolean moveCollidesWithPiece(int file, int rank) {

@@ -21,6 +21,8 @@ public class Board extends JPanel{
 
     Piece selectedPiece;
 
+    public int enPassantTile = -1;
+
     ArrayList<Piece> pieceList = new ArrayList<>();
 
     public Board() {
@@ -30,6 +32,10 @@ public class Board extends JPanel{
         this.addMouseMotionListener(input);
 
         this.addPieces();
+    }
+
+    public int getTileIndex(int file, int rank) {
+        return file + rank * ranks;
     }
 
     public void addPieces() {
@@ -91,19 +97,53 @@ public class Board extends JPanel{
         return p1.isWhite == p2.isWhite;
     }
 
+    private void promotePawn(Move move) {
+        pieceList.add(new Queen(this, move.toFile, move.toRank, move.piece.isWhite));
+        capture(move.piece);
+    }
+
     public void makeMove(Move move) {
-        if(this.isValidMove(move)){
+        if(move.piece.name.equals("Pawn")) {
+            int colorIndex = move.piece.isWhite ? 1 : -1;
+
+            if (getTileIndex(move.toFile, move.toRank) == enPassantTile) {
+                move.capture = getPiece(move.toFile, move.toRank + colorIndex);
+            }
+            if(Math.abs(move.piece.rank - move.toRank) == 2) {
+                enPassantTile = getTileIndex(move.toFile, move.toRank + colorIndex);
+            } else {
+                enPassantTile = -1;
+            }
+
+            // promotions
+            colorIndex = move.piece.isWhite ? 0 : 7;
+            if(move.toRank == colorIndex) {
+                promotePawn(move);
+            }
+
             move.piece.file = move.toFile;
             move.piece.rank = move.toRank;
             move.piece.xPos = move.toFile*tileSize;
             move.piece.yPos = move.toRank*tileSize;
+
+            move.piece.isFirstMove = false;
             
-            this.capture(move);
+            this.capture(move.capture);
+
+        } else if(this.isValidMove(move)){
+            move.piece.file = move.toFile;
+            move.piece.rank = move.toRank;
+            move.piece.xPos = move.toFile*tileSize;
+            move.piece.yPos = move.toRank*tileSize;
+
+            move.piece.isFirstMove = false;
+            
+            this.capture(move.capture);
         }
     }
 
-    public void capture(Move move) {
-        pieceList.remove(move.capture);
+    public void capture(Piece piece) {
+        pieceList.remove(piece);
     }
 
     public void paintComponent(Graphics g) {

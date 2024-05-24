@@ -19,10 +19,7 @@ public class King extends Piece {
     }
     
     public boolean isValidMovement(int file, int rank) {
-        if (Math.abs(file - this.file) == 1 && Math.abs(rank - this.rank) == 1) {
-            return true;
-        }
-        if (Math.abs(file - this.file) + Math.abs(rank - this.rank) == 1) {
+        if (Math.abs((file - this.file) + (rank - this.rank)) == 1 || Math.abs(file - this.file) + Math.abs(rank - this.rank) == 1) {
             return true;
         }
         return false;
