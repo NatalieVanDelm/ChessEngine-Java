@@ -14,6 +14,8 @@ public class Board extends JPanel{
 
     Input input = new Input(this);
 
+    CheckScanner checkScanner = new CheckScanner(this);
+
     public int tileSize = 85;
 
     int ranks = 8; // rows
@@ -36,6 +38,14 @@ public class Board extends JPanel{
 
     public int getTileIndex(int file, int rank) {
         return file + rank * ranks;
+    }
+
+    public Piece findKing(boolean isLight) {
+        for(Piece piece : pieceList) {
+            if(piece.isWhite == isLight && piece.name.equals("King"));
+            return piece;
+        }
+        return null;
     }
 
     public void addPieces() {
@@ -87,10 +97,13 @@ public class Board extends JPanel{
         if(move.piece.moveCollidesWithPiece(move.toFile, move.toRank)) {
             return false;
         }
+        if(checkScanner.isKingChecked(move)) {
+            return false;
+        }
         return true;
     }
 
-    private boolean sameTeam(Piece p1, Piece p2) {
+    public boolean sameTeam(Piece p1, Piece p2) {
         if (p1 == null || p2 == null) {
             return false;
         }
