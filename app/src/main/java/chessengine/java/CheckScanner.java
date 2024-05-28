@@ -23,7 +23,6 @@ public class CheckScanner {
             kingRank = move.toRank;
         }
 
-
         return hitByRook(move.toFile, move.toRank, king, kingFile, kingRank, 0, 1) ||
         hitByRook(move.toFile, move.toRank, king, kingFile, kingRank, 1, 0) ||
         hitByRook(move.toFile, move.toRank, king, kingFile, kingRank, 0, -1) ||
@@ -111,5 +110,22 @@ public class CheckScanner {
 
     private boolean checkByPawn(Piece p, Piece king, int file, int rank) {
         return p != null && !board.sameTeam(p, king) && p.name.equals("Pawn") && !(p.file == file && p.rank == rank);
+    }
+
+    public boolean isGameOver(Piece king) {
+        for(Piece piece : board.pieceList) {
+            if(board.sameTeam(piece, king)) {
+                board.selectedPiece = piece == king ? king : null;
+                for (int rank = 0; rank < board.ranks; rank++) {
+                    for (int file = 0; file < board.files; file++) {
+                        Move move = new Move(board, piece, file, rank);
+                        if(board.isValidMove(move)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

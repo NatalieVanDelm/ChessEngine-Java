@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import javax.swing.*;
 
@@ -14,7 +15,9 @@ public class Board extends JPanel{
 
     Input input = new Input(this);
 
-    CheckScanner checkScanner = new CheckScanner(this);
+    public CheckScanner checkScanner = new CheckScanner(this);
+
+    public String fenStartingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public int tileSize = 85;
 
@@ -26,6 +29,9 @@ public class Board extends JPanel{
     public int enPassantTile = -1;
 
     ArrayList<Piece> pieceList = new ArrayList<>();
+
+    private boolean isWhiteToMove = true;
+    private boolean isGameOver = false;
 
     public Board() {
         this.setPreferredSize(new Dimension(files*tileSize, ranks*tileSize));
@@ -40,9 +46,9 @@ public class Board extends JPanel{
         return file + rank * ranks;
     }
 
-    public Piece findKing(boolean isLight) {
+    public Piece findKing(boolean isWhite) {
         for(Piece piece : pieceList) {
-            if(piece.isWhite == isLight && piece.name.equals("King"));
+            if(piece.isWhite == isWhite && piece.name.equals("King"));
             return piece;
         }
         return null;
@@ -88,6 +94,9 @@ public class Board extends JPanel{
     }
 
     public boolean isValidMove(Move move) {
+        if(isWhiteToMove != move.piece.isWhite){
+            return false;
+        }
         if(sameTeam(move.piece, move.capture)) {
             return false;
         }
@@ -133,26 +142,31 @@ public class Board extends JPanel{
             if(move.toRank == colorIndex) {
                 promotePawn(move);
             }
-
-            move.piece.file = move.toFile;
-            move.piece.rank = move.toRank;
-            move.piece.xPos = move.toFile*tileSize;
-            move.piece.yPos = move.toRank*tileSize;
-
-            move.piece.isFirstMove = false;
-            
-            this.capture(move.capture);
-
-        } else if(this.isValidMove(move)){
-            move.piece.file = move.toFile;
-            move.piece.rank = move.toRank;
-            move.piece.xPos = move.toFile*tileSize;
-            move.piece.yPos = move.toRank*tileSize;
-
-            move.piece.isFirstMove = false;
-            
-            this.capture(move.capture);
+        } else if (move.piece.name.equals("King")) {
+            if(Math.abs(move.piece.file - move.toFile) == 2) {
+                Piece rook;
+                if(move.piece.file < move.toFile) {
+                    rook = getPiece(7, move.piece.rank);
+                    rook.file = 5;
+                } else {
+                    rook = getPiece(0, move.piece.rank);
+                    rook.file = 3;
+                }
+                rook.xPos = rook.file*tileSize;
+            }
         }
+        move.piece.file = move.toFile;
+        move.piece.rank = move.toRank;
+        move.piece.xPos = move.toFile*tileSize;
+        move.piece.yPos = move.toRank*tileSize;
+
+        move.piece.isFirstMove = false;
+        
+        this.capture(move.capture);
+
+        isWhiteToMove = !isWhiteToMove;
+
+        updateGameState();
     }
 
     public void capture(Piece piece) {
@@ -184,5 +198,32 @@ public class Board extends JPanel{
             piece.paint(g2d);
         }
     }
-    
+
+    private boolean insufficientMaterial(boolean isWhite) {
+        ArrayList<String> names = pieceList.stream()
+            .filter(p -> p.isWhite == isWhite)
+            .map(p -> p.name)
+            .collect(Collectors.toCollection(ArrayList::new));
+        if(names.contains("Queen") || names.contains("Pawn") || names.contains("Rook")) {
+            return false;
+        }
+        return names.size() < 3;
+    }
+
+    private void updateGameState() {
+        Piece king = findKing(isWhiteToMove);
+
+        if(checkScanner.isGameOver(king)) {
+            if(checkScanner.isKingChecked(new Move(this, king, king.file, king.rank))) {
+                System.out.println(isWhiteToMove ? "Black wins." : "White wins.");
+                isGameOver = true;
+            } else {
+                System.out.println("Stalemate.");
+                isGameOver = true;
+            }
+        } else if (insufficientMaterial(true) && insufficientMaterial(false)) {
+            System.out.println("Insufficient material.");
+            isGameOver = true;
+        }
+    }
 }
