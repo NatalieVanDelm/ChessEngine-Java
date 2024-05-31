@@ -39,7 +39,8 @@ public class Board extends JPanel{
         this.addMouseListener(input);
         this.addMouseMotionListener(input);
 
-        this.addPieces();
+        //this.addAllPieces();
+        this.loadPiecesFromFen(fenStartingPosition);
     }
 
     public int getTileIndex(int file, int rank) {
@@ -54,7 +55,85 @@ public class Board extends JPanel{
         return null;
     }
 
-    public void addPieces() {
+    public void loadPiecesFromFen(String fenString) {
+        pieceList.clear();
+        String[] parts = fenString.split(" ");
+
+        // adding pieces
+        String position = parts[0];
+        int rank = 0;
+        int file = 0;
+        for (int i = 0; i < position.length(); i++) {
+            char ch = position.charAt(i);
+            if(ch == '/') {
+                rank++;
+                file = 0;
+            } else if (Character.isDigit(ch)) {
+                file += Character.getNumericValue(ch);
+            } else {
+                boolean isWhite = Character.isUpperCase(ch);
+                char pieceChar = Character.toLowerCase(ch);
+
+                switch (pieceChar) {
+                    case 'r':
+                        pieceList.add(new Rook(this, file, rank, isWhite));
+                        break;
+                    case 'k':
+                        pieceList.add(new King(this, file, rank, isWhite));
+                        break;
+                    case 'n':
+                        pieceList.add(new Knight(this, file, rank, isWhite));
+                        break;
+                    case 'q':
+                        pieceList.add(new Queen(this, file, rank, isWhite));
+                        break;
+                    case 'b':
+                        pieceList.add(new Bishop(this, file, rank, isWhite));
+                        break;
+                    case 'p':
+                        pieceList.add(new Pawn(this, file, rank, isWhite));
+                        break;
+                }
+
+                file++;
+            }
+        }
+
+        // deciding turn
+        isWhiteToMove = parts[1].equals("w");
+
+        // castling rights
+        String castlingRights = parts[2];
+        Piece bqr = getPiece(0, 0);
+        if(bqr instanceof Rook) {
+            bqr.isFirstMove = castlingRights.contains("q");
+        }
+        Piece bkr = getPiece(7, 0);
+        if(bkr instanceof Rook) {
+            bkr.isFirstMove = castlingRights.contains("k");
+        }
+        Piece wqr = getPiece(0, 7);
+        if(wqr instanceof Rook) {
+            wqr.isFirstMove = castlingRights.contains("q");
+        }
+        Piece wkr = getPiece(7, 7);
+        if(wkr instanceof Rook) {
+            wkr.isFirstMove = castlingRights.contains("k");
+        }
+
+        // en passant square
+        String enPassant = parts[3];
+        if(enPassant.equals("-")) {
+            enPassantTile = -1;
+        } else {
+            enPassantTile = (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a');
+        }
+
+        //
+    }
+
+    // not used anymore
+    public void addAllPieces() {
         // setup black
         pieceList.add(new Rook(this, 0, 0, false));
         pieceList.add(new Knight(this, 1, 0, false));
@@ -142,7 +221,11 @@ public class Board extends JPanel{
             if(move.toRank == colorIndex) {
                 promotePawn(move);
             }
-        } else if (move.piece.name.equals("King")) {
+        } else {
+            enPassantTile = -1;
+        }
+        
+        if (move.piece.name.equals("King")) {
             if(Math.abs(move.piece.file - move.toFile) == 2) {
                 Piece rook;
                 if(move.piece.file < move.toFile) {

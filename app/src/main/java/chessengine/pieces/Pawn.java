@@ -27,7 +27,7 @@ public class Pawn extends Piece {
             return true;
         }
         // 2 steps
-        if (isFirstMove && this.file == file && rank == this.rank - 2*colorIndex && board.getPiece(file, rank) == null && board.getPiece(file, rank + colorIndex) == null) {
+        if (this.rank == (isWhite ? 6 : 1) && this.file == file && rank == this.rank - 2*colorIndex && board.getPiece(file, rank) == null && board.getPiece(file, rank + colorIndex) == null) {
             return true;
         }
         // capture left
