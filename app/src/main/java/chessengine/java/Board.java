@@ -11,7 +11,7 @@ import javax.swing.*;
 
 import chessengine.pieces.*;
 
-public class Board extends JPanel{
+public class Board extends JPanel {
 
     Input input = new Input(this);
 
@@ -39,7 +39,6 @@ public class Board extends JPanel{
         this.addMouseListener(input);
         this.addMouseMotionListener(input);
 
-        //this.addAllPieces();
         this.loadPiecesFromFen(fenStartingPosition);
     }
 
@@ -49,8 +48,9 @@ public class Board extends JPanel{
 
     public Piece findKing(boolean isWhite) {
         for(Piece piece : pieceList) {
-            if(piece.isWhite == isWhite && piece.name.equals("King"));
-            return piece;
+            if(piece.isWhite == isWhite && piece.name.equals("King")) {
+                return piece;
+            }
         }
         return null;
     }
@@ -128,39 +128,6 @@ public class Board extends JPanel{
         } else {
             enPassantTile = (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a');
         }
-
-        //
-    }
-
-    // not used anymore
-    public void addAllPieces() {
-        // setup black
-        pieceList.add(new Rook(this, 0, 0, false));
-        pieceList.add(new Knight(this, 1, 0, false));
-        pieceList.add(new Bishop(this, 2, 0, false));
-        pieceList.add(new Queen(this, 3, 0, false));
-        pieceList.add(new King(this, 4, 0, false));
-        pieceList.add(new Bishop(this, 5, 0, false));
-        pieceList.add(new Knight(this, 6, 0, false));
-        pieceList.add(new Rook(this, 7, 0, false));
-
-        for(int f = 0; f < files; f++) {
-            pieceList.add(new Pawn(this, f, 1, false));
-        }
-
-        // setup white
-        pieceList.add(new Rook(this, 0, 7, true));
-        pieceList.add(new Knight(this, 1, 7, true));
-        pieceList.add(new Bishop(this, 2, 7, true));
-        pieceList.add(new Queen(this, 3, 7, true));
-        pieceList.add(new King(this, 4, 7, true));
-        pieceList.add(new Bishop(this, 5, 7, true));
-        pieceList.add(new Knight(this, 6, 7, true));
-        pieceList.add(new Rook(this, 7, 7, true));
-
-        for(int f = 0; f < files; f++) {
-            pieceList.add(new Pawn(this, f, 6, true));
-        }
     }
 
     public Piece getPiece(int file, int rank) {
@@ -173,6 +140,9 @@ public class Board extends JPanel{
     }
 
     public boolean isValidMove(Move move) {
+        if(isGameOver) {
+            return false;
+        }
         if(isWhiteToMove != move.piece.isWhite){
             return false;
         }
@@ -238,6 +208,7 @@ public class Board extends JPanel{
                 rook.xPos = rook.file*tileSize;
             }
         }
+
         move.piece.file = move.toFile;
         move.piece.rank = move.toRank;
         move.piece.xPos = move.toFile*tileSize;
@@ -249,6 +220,7 @@ public class Board extends JPanel{
 
         isWhiteToMove = !isWhiteToMove;
 
+        System.out.println("Updating game state.");
         updateGameState();
     }
 
@@ -296,12 +268,16 @@ public class Board extends JPanel{
     private void updateGameState() {
         Piece king = findKing(isWhiteToMove);
 
-        if(checkScanner.isGameOver(king)) {
+        if(!checkScanner.hasLegalMoves(isWhiteToMove)) {
             if(checkScanner.isKingChecked(new Move(this, king, king.file, king.rank))) {
-                System.out.println(isWhiteToMove ? "Black wins." : "White wins.");
+                System.out.println("Checkmate.");
+                for(Piece piece : checkScanner.checkingPieces) {
+                    System.out.println(checkScanner.checkedKing.isWhite ? "White king in check by " + piece.name : "Black king in check by " + piece.name);
+                }
                 isGameOver = true;
             } else {
                 System.out.println("Stalemate.");
+                System.out.println(king.isWhite ? "White doesnt have any legal moves but is not in check." : "Black doesnt have any legal moves but is not in check.");
                 isGameOver = true;
             }
         } else if (insufficientMaterial(true) && insufficientMaterial(false)) {

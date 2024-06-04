@@ -44,8 +44,8 @@ public class Input extends MouseAdapter {
             if(board.isValidMove(move)) {
                 board.makeMove(move);
             } else {
-            board.selectedPiece.xPos = board.selectedPiece.file*board.tileSize;
-            board.selectedPiece.yPos = board.selectedPiece.rank*board.tileSize;
+                board.selectedPiece.xPos = board.selectedPiece.file*board.tileSize;
+                board.selectedPiece.yPos = board.selectedPiece.rank*board.tileSize;
             }
         }
 
